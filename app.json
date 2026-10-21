@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "DineEase",
+    "slug": "dineease",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.dineease.app"
+    },
+    "android": {
+      "package": "com.dineease.app",
+      "versionCode": 1,
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ]
+    },
+    "plugins": [
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "b6f54db5-4acf-4e1a-802f-2ec967d3ad3e"
+      }
+    }
+  }
+}
