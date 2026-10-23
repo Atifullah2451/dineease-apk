@@ -1,0 +1,13 @@
+{
+  "name": "dineease-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "seed:firestore": "node scripts/seedFirestore.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "firebase": "^13.0.0"
+  }
+}

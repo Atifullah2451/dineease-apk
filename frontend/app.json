@@ -8,6 +8,9 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "splash": {
+      "backgroundColor": "#ffffff"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dineease.app"
@@ -21,7 +24,8 @@
       ]
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      "expo-splash-screen"
     ],
     "extra": {
       "eas": {

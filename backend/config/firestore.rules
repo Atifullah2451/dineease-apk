@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user owns the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Helper function to check if the user is an admin
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.admin == true || 
+         request.auth.token.role == 'admin' ||
+         exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
+
+    // --- USERS COLLECTION ---
+    // Users can read and update only their own profile
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isOwner(userId) && 
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isAdmin']);
+      allow delete: if isAdmin();
+    }
+
+    // --- RESTAURANTS COLLECTION ---
+    // Publicly readable for browsing
+    // Only administrators can create, update, or delete restaurants
+    match /restaurants/{restaurantId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // --- MENU ITEMS COLLECTION ---
+    // Publicly readable for browsing dishes
+    // Only administrators can manage menu items
+    match /menuItems/{itemId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // --- ORDERS COLLECTION ---
+    // Customers can read their own orders
+    // Customers can create orders tied to their UID with initial 'pending' status
+    // Customers cannot modify existing orders or tamper with statuses
+    match /orders/{orderId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.status in ['pending', 'placed'] &&
+        request.resource.data.total is number &&
+        request.resource.data.items is list &&
+        request.resource.data.items.size() > 0;
+      
+      // Only admins or backend can update order status (e.g., preparing, out for delivery, completed)
+      // Customers can only cancel if still in 'pending' status
+      allow update: if isAdmin() || (
+        isAuthenticated() && 
+        resource.data.userId == request.auth.uid && 
+        resource.data.status == 'pending' && 
+        request.resource.data.status == 'cancelled' &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt', 'cancellationReason'])
+      );
+      
+      allow delete: if isAdmin();
+    }
+
+    // --- BOOKINGS (TABLE RESERVATIONS) COLLECTION ---
+    // Customers can read their own reservations
+    // Customers can create reservations with valid guests, date, and their own UID
+    match /bookings/{bookingId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.guestCount is number &&
+        request.resource.data.guestCount > 0 &&
+        request.resource.data.guestCount <= 20 &&
+        request.resource.data.status in ['pending', 'confirmed'];
+      
+      // User can cancel their own pending/confirmed booking
+      allow update: if isAdmin() || (
+        isAuthenticated() && 
+        resource.data.userId == request.auth.uid && 
+        resource.data.status in ['pending', 'confirmed'] &&
+        request.resource.data.status == 'cancelled' &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt', 'cancellationReason'])
+      );
+
+      allow delete: if isAdmin();
+    }
+  }
+}

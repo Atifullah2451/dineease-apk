@@ -1,0 +1,6 @@
+{
+  "name": "DineEase - Restaurant & Table Booking App",
+  "description": "Full-stack modern restaurant discovery, ordering, and table booking app with Expo React Native and Firebase.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
