@@ -1,3 +1,7 @@
+
+
+https://github.com/user-attachments/assets/7b2f1de9-84be-4106-b42d-18586d3ce58b
+
 # DineEase
 
 DineEase has an Expo React Native app in `frontend/`, a separate Vite web client
